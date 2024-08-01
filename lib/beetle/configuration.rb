@@ -72,9 +72,9 @@ module Beetle
     attr_accessor :redis_configuration_client_ids
 
     # list of amqp servers to use (defaults to <tt>"localhost:5672"</tt>)
-    attr_accessor :servers
+    attr_reader :servers
     # list of additional amqp servers to use for subscribers (defaults to <tt>""</tt>)
-    attr_accessor :additional_subscription_servers
+    attr_reader :additional_subscription_servers
     # the virtual host to use on the AMQP servers (defaults to <tt>"/"</tt>)
     attr_accessor :vhost
     # the AMQP user to use when connecting to the AMQP servers (defaults to <tt>"guest"</tt>)
@@ -237,7 +237,30 @@ module Beetle
       }
     end
 
+    def servers=(hostnames_or_urls)
+      @servers = normalize_servers(hostnames_or_urls)
+    end
+
+    def additional_subscription_servers=(hostnames_or_urls)
+      @additional_subscription_servers = normalize_servers(hostnames_or_urls)
+    end
+
     private
+
+    def normalize_servers(hostnames_or_urls)
+      # normalize input to connection URLs
+      hostnames_or_urls.to_s.split(/\s*,\s*/).map do |server|
+        server.strip!
+        if server.start_with?(/^amqps?:\/\//)
+          server
+        else
+          # TODO: use username/password from config?
+          "amqp://#{server}"
+        end
+      end.uniq.reject(&:blank?)
+    end
+
+
     def load_config
       raw = ERB.new(IO.read(config_file)).result
       hash = if config_file =~ /\.json$/

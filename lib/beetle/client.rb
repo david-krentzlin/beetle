@@ -377,12 +377,8 @@ module Beetle
     end
 
     def load_brokers_from_config
-      @servers = parse_server_list(config.servers)
-      @additional_subscription_servers = parse_server_list(config.additional_subscription_servers) - @servers
-    end
-
-    def parse_server_list(s)
-      s.split(/ *, */).uniq.reject(&:blank?)
+      @servers = config.servers
+      @additional_subscription_servers = config.additional_subscription_servers - @servers
     end
   end
 end
