@@ -17,8 +17,8 @@ module Beetle
 
     test "new bunnies should be created using current host and port and they should be started" do
       m = mock("dummy")
+
       expected_bunny_options = {
-        :host => @pub.send(:current_host), :port => @pub.send(:current_port),
         :logging => false,
         :user => "guest",
         :pass => "guest",
@@ -29,7 +29,7 @@ module Beetle
         :channel_max => 2047,
         :spec => '09'
       }
-      Bunny.expects(:new).with(expected_bunny_options).returns(m)
+      Bunny.expects(:new).with("amqp://#{@pub.send(:current_host)}:#{@pub.send(:current_port)}", expected_bunny_options).returns(m)
       m.expects(:start)
       assert_equal m, @pub.send(:new_bunny)
     end

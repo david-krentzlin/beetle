@@ -162,8 +162,7 @@ module Beetle
 
     def new_bunny
       b = Bunny.new(
-        :host               => current_host,
-        :port               => current_port,
+        @server.to_uri.to_s, 
         :logging            => !!@options[:logging],
         :user               => @client.config.user,
         :pass               => @client.config.password,

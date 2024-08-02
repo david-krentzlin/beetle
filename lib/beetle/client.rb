@@ -1,5 +1,13 @@
 require 'json'
 
+# FIXME: this needs to go into a proper place
+class AMQ::URI
+  # we need to monkey patch AMQ::URI because it's plain broken in the version we're using
+  def self.parse(*args)
+    ::URI.parse(*args)
+  end
+end
+
 module Beetle
   # This class provides the interface through which messaging is configured for both
   # message producers and consumers. It keeps references to an instance of a
@@ -20,6 +28,7 @@ module Beetle
   # The net effect of this strategy is that producers and consumers can be started in any
   # order, so that no message is lost if message producers are accidentally started before
   # the corresponding consumers.
+
 
   class ServerName
     def initialize(hostname_or_url)
