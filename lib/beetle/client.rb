@@ -20,6 +20,48 @@ module Beetle
   # The net effect of this strategy is that producers and consumers can be started in any
   # order, so that no message is lost if message producers are accidentally started before
   # the corresponding consumers.
+
+  class ServerName
+    def initialize(hostname_or_url)
+      @uri = parse_uri(hostname_or_url)
+      @hostname_and_port = "#{@uri.host}:#{@uri.port}".freeze
+    end
+
+    def to_uri
+      @uri
+    end
+
+    def to_s
+      @hostname_and_port
+    end
+
+    def to_str
+      @hostname_and_port
+    end
+
+    def ==(other)
+      self.to_s == other.to_s
+    end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      @hostname_and_port.hash
+    end
+
+    private
+
+    def parse_uri(hostname_or_url)
+      if hostname_or_url.start_with?("amqp://", "amqps://")
+        URI.parse(hostname_or_url)
+      else
+        URI.parse("amqp://#{hostname_or_url}")
+      end
+    end
+  end
+  
   class Client
     include Logging
 
@@ -377,8 +419,12 @@ module Beetle
     end
 
     def load_brokers_from_config
-      @servers = config.servers
-      @additional_subscription_servers = config.additional_subscription_servers - @servers
+      @servers = parse_server_list(config.servers)
+      @additional_subscription_servers = parse_server_list(config.additional_subscription_servers) - @servers
+    end
+
+    def parse_server_list(s)
+      s.split(/ *, */).uniq.reject(&:blank?).map { |server| ServerName.new(server) }
     end
   end
 end

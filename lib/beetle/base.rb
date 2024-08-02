@@ -5,7 +5,7 @@ module Beetle
   class Base
     include Logging
 
-    attr_accessor :options, :servers, :server  #:nodoc:
+    attr_accessor :options, :servers, :server #:nodoc:
 
     def initialize(client, options = {}) #:nodoc:
       @options = options
@@ -24,11 +24,11 @@ module Beetle
     end
 
     def current_host
-      @server.split(':').first
+      @server.to_s.split(':').first
     end
 
     def current_port
-      @server =~ /:(\d+)$/ ? $1.to_i : 5672
+      @server.to_s =~ /:(\d+)$/ ? $1.to_i : 5672
     end
 
     def set_current_server(s)
@@ -99,7 +99,7 @@ module Beetle
     def publish_policy_options(options)
       # avoid endless recursion
       return if options[:queue_name] == @client.config.beetle_policy_updates_queue_name
-      payload = options.merge(:server => @server)
+      payload = options.merge(:server => @server.to_s)
       if @client.config.update_queue_properties_synchronously
         logger.debug("Beetle: updating policy options on #{@server}: #{payload.inspect}")
         @client.update_queue_properties!(payload)

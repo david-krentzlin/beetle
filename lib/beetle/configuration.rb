@@ -71,18 +71,26 @@ module Beetle
     # the redis configuration client ids living on the worker machines taking part in the redis failover, separated by comma (defaults to <tt>""</tt>)
     attr_accessor :redis_configuration_client_ids
 
-    # list of amqp servers to use (defaults to <tt>"localhost:5672"</tt>)
-    attr_reader :servers
-    # list of additional amqp servers to use for subscribers (defaults to <tt>""</tt>)
-    attr_reader :additional_subscription_servers
+    # comma separated list of amqp servers to use (defaults to <tt>"localhost:5672"</tt>)
+    # each server can be a full amqp url, e.g. <tt>amqp://user:password@localhost:5672</tt> or just a URL fragment containing host and port like <tt>localhost:5672</tt>
+    attr_accessor :servers
+
+    # comma separated list of additional amqp servers to use for subscribers (defaults to <tt>""</tt>)
+    # each server can be a full amqp url, e.g. <tt>amqp://user:password@localhost:5672</tt> or just a URL fragment containing host and port like <tt>localhost:5672</tt>
+    attr_accessor :additional_subscription_servers
+
     # the virtual host to use on the AMQP servers (defaults to <tt>"/"</tt>)
     attr_accessor :vhost
+
     # the AMQP user to use when connecting to the AMQP servers (defaults to <tt>"guest"</tt>)
     attr_accessor :user
+
     # the password to use when connectiong to the AMQP servers (defaults to <tt>"guest"</tt>)
     attr_accessor :password
+
     # the maximum permissible size of a frame (in bytes). defaults to 128 KB
     attr_accessor :frame_max
+
     # the max number of channels the publisher tries to negotiate with the server.  Defaults
     # to 2047, which is the RabbitMQ default in 3.7.  We can't set this to 0 because of a bug
     # in bunny.
@@ -226,7 +234,7 @@ module Beetle
         end
     end
 
-    # redis optins to be passed to Redis.new
+    # redis options to be passed to Redis.new
     def redis_options
       {
         db: redis_db,
@@ -237,29 +245,7 @@ module Beetle
       }
     end
 
-    def servers=(hostnames_or_urls)
-      @servers = normalize_servers(hostnames_or_urls)
-    end
-
-    def additional_subscription_servers=(hostnames_or_urls)
-      @additional_subscription_servers = normalize_servers(hostnames_or_urls)
-    end
-
     private
-
-    def normalize_servers(hostnames_or_urls)
-      # normalize input to connection URLs
-      hostnames_or_urls.to_s.split(/\s*,\s*/).map do |server|
-        server.strip!
-        if server.start_with?(/^amqps?:\/\//)
-          server
-        else
-          # TODO: use username/password from config?
-          "amqp://#{server}"
-        end
-      end.uniq.reject(&:blank?)
-    end
-
 
     def load_config
       raw = ERB.new(IO.read(config_file)).result

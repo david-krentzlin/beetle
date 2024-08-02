@@ -442,6 +442,7 @@ module Beetle
     end
   end
 
+
   class ServerDeduplicationTest < Minitest::Test
     def setup
       @config = Configuration.new
@@ -476,4 +477,7 @@ module Beetle
     end
   end
 
+  class ServerURLTest < Minitest::Test
+    # TODO:
+  end
 end
